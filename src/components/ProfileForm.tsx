@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupCard } from "@/components/ui/radio-group";
 import { InfoTooltip } from "@/components/InfoTooltip";
+import { StringListInput } from "@/components/StringListInput";
 import { ProviderSelector } from "@/components/ProviderSelector";
 import { CodePreview } from "@/components/CodePreview";
 
@@ -16,6 +17,7 @@ import { dnsProviders, type DNSProvider } from "@/lib/dns-providers";
 import {
   generateMobileConfig,
   downloadProfile,
+  DEFAULT_EXCLUDED_DOMAINS,
   type ProfileConfig,
   type CertificateConfig,
 } from "@/lib/profile-generator";
@@ -36,6 +38,10 @@ export function ProfileForm() {
   const [serverIps, setServerIps] = useState(
     dnsProviders[0].ips?.join(", ") || "",
   );
+  const [excludedSsids, setExcludedSsids] = useState<string[]>([]);
+  const [excludedDomains, setExcludedDomains] = useState<string[]>([
+    ...DEFAULT_EXCLUDED_DOMAINS,
+  ]);
   const [encryptedOnly, setEncryptedOnly] = useState(false);
   const [payloadScope, setPayloadScope] = useState<"System" | "User">("System");
   const [certificates] = useState<CertificateConfig[]>([]);
@@ -133,6 +139,10 @@ export function ProfileForm() {
         .split(",")
         .map((ip) => ip.trim())
         .filter(Boolean),
+      excludedSsids: excludedSsids.map((ssid) => ssid.trim()).filter(Boolean),
+      excludedDomains: excludedDomains
+        .map((domain) => domain.trim())
+        .filter(Boolean),
       encryptedOnly,
       payloadScope,
       certificates,
@@ -181,6 +191,8 @@ export function ProfileForm() {
     setDnsProtocol("HTTPS");
     setServerUrl(dnsProviders[0].dohUrl);
     setServerIps(dnsProviders[0].ips?.join(", ") || "");
+    setExcludedSsids([]);
+    setExcludedDomains([...DEFAULT_EXCLUDED_DOMAINS]);
     setEncryptedOnly(false);
     setPayloadScope("System");
 
@@ -339,6 +351,43 @@ export function ProfileForm() {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Label className="text-base font-medium">Additional Options</Label>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Label>Excluded Wi-Fi Networks</Label>
+            <InfoTooltip content="Optional. Wi-Fi network names (SSIDs) where encrypted DNS should NOT be used. On these networks the device falls back to the network's default DNS. Names are exact and case-sensitive. Only affects Wi-Fi. Ethernet always use encrypted DNS." />
+          </div>
+          <StringListInput
+            values={excludedSsids}
+            onChange={setExcludedSsids}
+            placeholder="Home WiFi"
+            addLabel="Add network"
+            ariaLabel="Excluded Wi-Fi network"
+          />
+          <p className="text-xs text-muted-foreground">
+            Add each network name exactly as it appears, including
+            capitalization.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Label>Excluded Domains</Label>
+            <InfoTooltip content="Domains that bypass encrypted DNS and use the network's default resolver. The defaults cover Apple captive-portal detection and carrier voicemail, which can break if forced through encrypted DNS. Edit freely or remove all to disable." />
+          </div>
+          <StringListInput
+            values={excludedDomains}
+            onChange={setExcludedDomains}
+            placeholder="captive.apple.com"
+            addLabel="Add domain"
+            ariaLabel="Excluded domain"
+            inputClassName="font-mono"
+          />
+          <p className="text-xs text-muted-foreground">
+            These resolve via the network's default DNS (e.g. captive portals,
+            carrier voicemail). Remove all to disable.
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
