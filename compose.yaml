@@ -1,0 +1,7 @@
+services:
+  dns-profile-generator:
+    image: ghcr.io/frousselet/dns-profile-generator:latest
+    build: .
+    ports:
+      - "${PORT:-8080}:8080"
+    restart: unless-stopped

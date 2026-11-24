@@ -78,6 +78,21 @@ bun run dev
 
 The server listens on `http://localhost:8080/dns-profile-generator/`.
 
+### Docker
+
+A multi-architecture image (`linux/amd64`, `linux/arm64`) is published to the GitHub Container Registry on every push to `main` and on every `v*` tag.
+
+```bash
+# Run the published image
+docker compose pull
+docker compose up -d --no-build
+
+# Or build the image from the local sources
+docker compose up -d --build
+```
+
+The app is then served on `http://localhost:8080/dns-profile-generator/`. Set the `PORT` environment variable to publish it on another host port.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
